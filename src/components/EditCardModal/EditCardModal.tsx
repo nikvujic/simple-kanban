@@ -1,6 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, X } from 'lucide-react';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { updateCard, deleteCard } from '../../store/boardsSlice';
 import type { Card } from '../../types';
@@ -19,8 +21,27 @@ export default function EditCardModal({ boardId, listId, card, onClose }: Props)
   const [title, setTitle] = useState(card.title);
   const [description, setDescription] = useState(card.description ?? '');
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [editingDesc, setEditingDesc] = useState(!card.description);
   const descRef = useRef<HTMLTextAreaElement>(null);
   const saveRef = useRef<HTMLButtonElement>(null);
+
+  // Auto-grow the textarea to fit its content (modal body scrolls past max height)
+  useLayoutEffect(() => {
+    const el = descRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight + 2}px`;
+  }, [description, editingDesc]);
+
+  function startEditingDesc() {
+    setEditingDesc(true);
+    requestAnimationFrame(() => {
+      const el = descRef.current;
+      if (!el) return;
+      el.focus();
+      el.setSelectionRange(el.value.length, el.value.length);
+    });
+  }
 
   function handleBackdropClick(e: React.MouseEvent) {
     if (e.target === e.currentTarget) onClose();
@@ -66,25 +87,60 @@ export default function EditCardModal({ boardId, listId, card, onClose }: Props)
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
-                  descRef.current?.focus();
+                  startEditingDesc();
                 }
               }}
             />
           </div>
           <div className="form-field">
             <label htmlFor="card-desc-input">Description</label>
-            <textarea
-              id="card-desc-input"
-              className="card-desc-textarea"
-              ref={descRef}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={4}
-              placeholder="Add a description..."
-            />
+            {editingDesc ? (
+              <textarea
+                id="card-desc-input"
+                className="card-desc-textarea"
+                ref={descRef}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                onBlur={() => { if (description.trim()) setEditingDesc(false); }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape' && description.trim()) {
+                    e.stopPropagation();
+                    setEditingDesc(false);
+                  }
+                }}
+                rows={4}
+                placeholder="Add a description... (Markdown supported)"
+              />
+            ) : (
+              <div
+                id="card-desc-input"
+                className="card-desc-preview"
+                role="button"
+                tabIndex={0}
+                title="Click to edit"
+                onClick={(e) => {
+                  if ((e.target as HTMLElement).closest('a, input')) return;
+                  startEditingDesc();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    startEditingDesc();
+                  }
+                }}
+              >
+                <Markdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{ a: (props) => <a {...props} target="_blank" rel="noopener noreferrer" /> }}
+                >
+                  {description}
+                </Markdown>
+              </div>
+            )}
           </div>
         </div>
-        <div className="modal-footer edit-card-footer">
+        {/* Keep focus in the textarea so its blur doesn't reflow the footer mid-click */}
+        <div className="modal-footer edit-card-footer" onMouseDown={(e) => e.preventDefault()}>
           {confirmingDelete ? (
             <div className="delete-confirm-group">
               <button className="delete-confirm-btn delete-confirm-yes" onClick={handleDelete} title="Confirm delete">
