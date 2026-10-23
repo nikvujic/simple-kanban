@@ -43,7 +43,7 @@ The dev server runs on Vite's default port. Authenticated mode expects the backe
 
 ## Routes
 
-- `/landing-page` - marketing landing page
+- `/landing-page` - marketing landing page (currently hidden, redirects to `/login`)
 - `/login` - sign in (or continue as guest)
 - `/` - boards overview (protected)
 - `/:boardId` - single board view (protected)
