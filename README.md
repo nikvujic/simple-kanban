@@ -10,7 +10,7 @@ Live at [simple-kanban.nv-platform.com](https://simple-kanban.nv-platform.com).
 - Drag and drop to reorder boards, lists, and cards (powered by [@hello-pangea/dnd](https://github.com/hello-pangea/dnd))
 - Two usage modes:
   - **Guest** - data lives entirely in `localStorage`, no account needed
-  - **Authenticated** - data is persisted via the [simple-kanban-server](../simple-kanban-server) REST API
+  - **Authenticated** - data is persisted via the [simple-kanban-server](https://github.com/nikvujic/simple-kanban-server) REST API
 - Import and export all boards as JSON
 - Light and dark themes (persisted, applied before first paint to avoid flash)
 
