@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../hooks/useAppDispatch';
 import { useAppSelector } from '../../hooks/useAppSelector';
 import { login, loginAsGuest } from '../../store/authSlice';
-import ThemeToggle from '../../components/ThemeToggle/ThemeToggle';
 import './LoginPage.css';
 
 export default function LoginPage() {
@@ -92,7 +91,6 @@ export default function LoginPage() {
           </svg>
           simple kanban
         </span>
-        <ThemeToggle />
       </header>
 
       <main className="login-main">
